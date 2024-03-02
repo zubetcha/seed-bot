@@ -10,13 +10,14 @@ const getGundanList = () => {
       .ignoreHttpErrors(true)
       .get();
 
-    result = response.text();
+    result = response.html().replace(/<br>/gi, '\r\n');
   } catch (e) {
     result = e;
     Log.e(e);
   }
 
-  return result.replace(/<br\s*\/?>/gi, '\r\n');
+  // return result.replace(/<br\s*\/?>/gi, '\r\n');
+  return result;
 };
 
 const getCharutList = () => {
