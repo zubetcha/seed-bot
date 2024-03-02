@@ -2,7 +2,7 @@
 'use strict';
 var config = {
   address: '127.0.0.1', // Node.js 프로그램을 실행한 기기의 IP
-  port: 8080,
+  port: 8000,
 };
 var socket = new java.net.DatagramSocket();
 var address = java.net.InetAddress.getByName(config.address);
