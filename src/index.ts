@@ -1,12 +1,13 @@
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
+import readline from 'readline';
 
 const app = express();
 const port = 8000;
 const cwd = process.cwd();
 
-const gundanListPath = path.resolve(__dirname, './data/list_gundan.txt');
+const gundanListPath = path.resolve(__dirname, './data/gundan.html');
 const charutListPath = path.resolve(__dirname, './data/list_charut.txt');
 
 app.get('/', (req, res) => {

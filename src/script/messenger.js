@@ -1,20 +1,42 @@
-const BASE_URL = process.env.BASE_URL;
-const LIST_GUNDAN = 'gundan_list.txt';
-const TEMPLATE_GUNDAN = 'gundan_template.txt';
+const BASE_URL = 'https://seed-bot-zubetcha.koyeb.app';
 
-const getGundanList = async () => {
-  const res = await fetch(`${BASE_URL}/gundan`);
-  return res.text();
+const getGundanList = () => {
+  let json;
+  let result;
+  try {
+    let response = org.jsoup.Jsoup.connect(BASE_URL + '/gundan')
+      .header('Content-Type', 'application/json')
+      .ignoreContentType(true)
+      .ignoreHttpErrors(true)
+      .get();
+
+    result = response.text();
+  } catch (e) {
+    result = e;
+    Log.e(e);
+  }
+  return result.replaceAll('<br/>', '\r\n');
 };
 
-const getCharutList = async () => {
-  const res = await fetch(`${BASE_URL}/charut`);
-  return res.text();
+const getCharutList = () => {
+  let json;
+  let result;
+  try {
+    let response = org.jsoup.Jsoup.connect(BASE_URL + '/charut')
+      .header('Content-Type', 'application/json')
+      .ignoreContentType(true)
+      .ignoreHttpErrors(true)
+      .get();
+
+    result = response.text();
+  } catch (e) {
+    result = e;
+    Log.e(e);
+  }
+  return result;
 };
 
 function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName) {
-  // 모든 채팅 알림에 대해 메시지 원본 그대로 답장하는 기능
-
   if (!msg.startsWith('!')) {
     return;
   }
@@ -27,13 +49,10 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
       카룻: getCharutList,
     };
 
-    let list;
+    const list = fetcher[boss]();
 
-    fetcher[boss]?.().then((result) => {
-      list = result;
-    });
-
-    replier.reply(list);
+    Log.i(list);
+    replier.reply(room, list);
   }
 
   if (cmd === '!가입') {
@@ -46,8 +65,6 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
   }
 
   if (msg.startsWith('!명단')) {
-    let list;
-
     if (msg.includes('군단')) {
     }
   }
