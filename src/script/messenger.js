@@ -10,7 +10,7 @@ const getGundanList = () => {
       .ignoreHttpErrors(true)
       .get();
 
-    result = response.html().replace(/<br>/gi, '\r\n');
+    result = org.jsoup.Jsoup.parse(response.html()).body().html();
   } catch (e) {
     result = e;
     Log.e(e);
