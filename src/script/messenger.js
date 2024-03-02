@@ -15,7 +15,8 @@ const getGundanList = () => {
     result = e;
     Log.e(e);
   }
-  return result.replaceAll('<br/>', '\r\n');
+
+  return result.replace(/<br\s*\/?>/gi, '\r\n');
 };
 
 const getCharutList = () => {
@@ -64,16 +65,6 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
     replier.reply(bossStr[boss]);
   }
 
-  if (msg.startsWith('!명단')) {
-    if (msg.includes('군단')) {
-    }
-  }
-
-  if (msg.startsWith('!군단')) {
-    replier.reply('군단');
-  }
-
-  if (msg.startsWith('!카룻')) {
-    replier.reply('카룻');
+  if (cmd === '!수정') {
   }
 }
