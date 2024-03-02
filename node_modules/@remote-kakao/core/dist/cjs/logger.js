@@ -1,0 +1,11 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.rkPluginLog = exports.readyLog = exports.rkLog = exports.rkColor = void 0;
+const rkColor = (text) => `\u001B[35m${text}\u001B[39m`;
+exports.rkColor = rkColor;
+const rkLog = (text) => console.log(`${(0, exports.rkColor)('⚡')}: ${text}`);
+exports.rkLog = rkLog;
+const readyLog = (serviceName, port) => console.log(`${(0, exports.rkColor)('⚡')}: ${serviceName ? `${(0, exports.rkColor)(serviceName)} l` : 'L'}istening${port ? ` on port ${(0, exports.rkColor)(port.toString())}` : ''}!\n`);
+exports.readyLog = readyLog;
+const rkPluginLog = (name, text) => console.log(`${(0, exports.rkColor)(`⚡${name}`)}: ${text}`);
+exports.rkPluginLog = rkPluginLog;
