@@ -1,0 +1,13 @@
+{
+  "gundan": [
+    { "title": "군단 1팀", "startTime": "21:45", "members": [] },
+    { "title": "군단 2팀", "startTime": "22:00", "members": [] },
+    { "title": "군단 3팀", "startTime": "22:15", "members": [] },
+    { "title": "군단 4팀", "startTime": "22:30", "members": [] }
+  ],
+  "charut": [
+    { "title": "카룻 1팀", "startTime": "21:45", "members": [] },
+    { "title": "카룻 2팀", "startTime": "22:00", "members": [] },
+    { "title": "카룻 3팀", "startTime": "22:15", "members": [] }
+  ]
+}
