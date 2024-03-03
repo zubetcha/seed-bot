@@ -71,7 +71,15 @@ app.post('/contents/member/init', (req: Request<{ content: string }>, res) => {
   const templateHtmlStr = fs.readFileSync(getFixtureFilePath(TEMPLATE_FILE_NAME[content]), 'utf-8');
   const $ = cheerio.load(templateHtmlStr, null, false);
 
-  const today = new Date();
+  // 현재 시간대의 날짜를 가져오기
+  const currentDate = new Date();
+
+  // 특정 타임존의 날짜 문자열로 변환
+  const formattedDate = currentDate.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+
+  // 변환된 문자열을 Date 객체로 파싱
+  const today = new Date(formattedDate);
+
   const closestSat = addDays(startOfWeek(today), 5);
   let dateStr = getDateStr(today);
 

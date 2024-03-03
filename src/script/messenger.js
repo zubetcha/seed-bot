@@ -14,7 +14,8 @@ const getContentsMemberList = (content) => {
     result = org.jsoup.Jsoup.parse(response.html())
       .body()
       .html()
-      .replace(/<br\s*\/?>/gi, '');
+      .replace(/<br\s*\/?>/gi, '')
+      .trim();
   } catch (e) {
     result = e;
     Log.e(e);
@@ -37,7 +38,8 @@ const initContent = (data) => {
     result = org.jsoup.Jsoup.parse(response.html())
       .body()
       .html()
-      .replace(/<br\s*\/?>/gi, '');
+      .replace(/<br\s*\/?>/gi, '')
+      .trim();
   } catch (e) {
     result = e;
     Log.e(e);
@@ -61,7 +63,8 @@ const joinContent = (data) => {
     result = org.jsoup.Jsoup.parse(response.html())
       .body()
       .html()
-      .replace(/<br\s*\/?>/gi, '');
+      .replace(/<br\s*\/?>/gi, '')
+      .trim();
   } catch (e) {
     result = e;
     Log.e(e);
@@ -85,7 +88,8 @@ const editContentInfo = (data) => {
     result = org.jsoup.Jsoup.parse(response.html())
       .body()
       .html()
-      .replace(/<br\s*\/?>/gi, '');
+      .replace(/<br\s*\/?>/gi, '')
+      .trim();
   } catch (e) {
     result = e;
     Log.e(e);
@@ -109,7 +113,8 @@ const deleteMember = (data) => {
     result = org.jsoup.Jsoup.parse(response.html())
       .body()
       .html()
-      .replace(/<br\s*\/?>/gi, '');
+      .replace(/<br\s*\/?>/gi, '')
+      .trim();
   } catch (e) {
     result = e;
     Log.e(e);
