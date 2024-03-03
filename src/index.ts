@@ -37,7 +37,7 @@ const refineListHtml = ($: cheerio.CheerioAPI, content: string) => {
     .html()
     ?.replace(/<div>/g, '')
     .replace(/<div id=".*">/g, '')
-    .replace(/<\/div>/g, '')
+    .replace(/<\/div>/g, '<br>')
     .trim();
 };
 

@@ -23,13 +23,13 @@ const getContentsMemberList = (content) => {
   return result;
 };
 
-const initContent = (content) => {
+const initContent = (data) => {
   let json;
   let result;
   try {
     let response = org.jsoup.Jsoup.connect(BASE_URL + '/contents/member/init')
       .header('Content-Type', 'application/json')
-      .data('content', content)
+      .requestBody(JSON.stringify(data))
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .post();
@@ -46,16 +46,14 @@ const initContent = (content) => {
   return result;
 };
 
-const joinContent = ({ nickname, content, team, no }) => {
+const joinContent = (data) => {
   let json;
   let result;
+
   try {
     let response = org.jsoup.Jsoup.connect(BASE_URL + '/contents/member/join')
       .header('Content-Type', 'application/json')
-      .data('nickname', nickname)
-      .data('content', content)
-      .data('team', team)
-      .data('no', no ?? null)
+      .requestBody(JSON.stringify(data))
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .post();
@@ -72,16 +70,14 @@ const joinContent = ({ nickname, content, team, no }) => {
   return result;
 };
 
-const editContentInfo = ({ content, team, key, value }) => {
+const editContentInfo = (data) => {
   let json;
   let result;
+
   try {
     let response = org.jsoup.Jsoup.connect(BASE_URL + '/contents/edit')
       .header('Content-Type', 'application/json')
-      .data('content', content)
-      .data('team', team)
-      .data('key', key)
-      .data('value', value)
+      .requestBody(JSON.stringify(data))
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .post();
@@ -98,15 +94,14 @@ const editContentInfo = ({ content, team, key, value }) => {
   return result;
 };
 
-const deleteMember = () => {
+const deleteMember = (data) => {
   let json;
   let result;
+
   try {
     let response = org.jsoup.Jsoup.connect(BASE_URL + '/contents/member/delete')
       .header('Content-Type', 'application/json')
-      .data('content', content)
-      .data('team', team)
-      .data('no', no)
+      .requestBody(JSON.stringify(data))
       .ignoreContentType(true)
       .ignoreHttpErrors(true)
       .post();
@@ -131,54 +126,58 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
   const [cmd, content, team, key, value] = msg.trim().split(' ');
 
   if (cmd === '!명단') {
-    const list = getContentsMemberList(content);
+    const memberList = getContentsMemberList(content);
 
-    Log.i(list);
-    replier.reply(room, list);
+    Log.i(memberList);
+    replier.reply(room, memberList);
   }
 
   if (cmd === '!초기화') {
-    const list = initContent(content);
+    const initData = {
+      content: content,
+    };
+    const inittedMemberList = initContent(initData);
 
-    Log.i(list);
-    replier.reply(room, list);
+    Log.i(inittedMemberList);
+    replier.reply(room, inittedMemberList);
   }
 
   if (cmd === '!가입') {
-    const data = {
-      nickname: key ?? sender,
-      content,
+    const no = Number(value);
+    const joinData = {
+      nickname: key ? key : sender,
+      content: content,
       team: Number(team),
-      no: Number(value),
+      no: no ? no : null,
     };
-    const list = joinContent(data);
+    const newMemberList = joinContent(joinData);
 
-    Log.i(list);
-    replier.reply(room, list);
+    Log.i(newMemberList);
+    replier.reply(room, newMemberList);
   }
 
   if (cmd === '!수정') {
-    const data = {
-      content,
+    const editData = {
+      content: content,
       team: Number(team),
-      key,
-      value,
+      key: key,
+      value: value,
     };
-    const list = editContentInfo(data);
+    const modifiedMemberList = editContentInfo(editData);
 
-    Log.i(list);
-    replier.reply(room, list);
+    Log.i(modifiedMemberList);
+    replier.reply(room, modifiedMemberList);
   }
 
   if (cmd === '!탈퇴') {
-    const data = {
-      content,
+    const deleteData = {
+      content: content,
       team: Number(team),
       no: Number(key),
     };
-    const list = deleteMember(data);
+    const filteredMemberList = deleteMember(deleteData);
 
-    Log.i(list);
-    replier.reply(room, list);
+    Log.i(filteredMemberList);
+    replier.reply(room, filteredMemberList);
   }
 }
