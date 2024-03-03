@@ -140,7 +140,7 @@ app.post('/contents/member/join', (req: Request<ContentsJoinReq>, res) => {
   }
 
   // no 자리 비어 있는지 확인
-  if (contentList[index].members[no - 1].nickname) {
+  if (no && contentList[index].members[no - 1].nickname) {
     return res.send(`${no}번 자리는 이미 있습니다만.`);
   }
 
