@@ -1,13 +1,265 @@
 {
-  "gundan": [
-    { "title": "군단 1팀", "startTime": "21:45", "members": [] },
-    { "title": "군단 2팀", "startTime": "22:00", "members": [] },
-    { "title": "군단 3팀", "startTime": "22:15", "members": [] },
-    { "title": "군단 4팀", "startTime": "22:30", "members": [] }
+  "군단": [
+    {
+      "title": "군단 1팀",
+      "date": "",
+      "startTime": "21:45",
+      "members": [
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        }
+      ]
+    },
+    {
+      "title": "군단 2팀",
+      "date": "",
+      "startTime": "22:00",
+      "members": [
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        }
+      ]
+    },
+    {
+      "title": "군단 3팀",
+      "date": "",
+      "startTime": "22:15",
+      "members": [
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        }
+      ]
+    },
+    {
+      "title": "군단 4팀",
+      "date": "",
+      "startTime": "22:30",
+      "members": [
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        }
+      ]
+    }
   ],
-  "charut": [
-    { "title": "카룻 1팀", "startTime": "21:45", "members": [] },
-    { "title": "카룻 2팀", "startTime": "22:00", "members": [] },
-    { "title": "카룻 3팀", "startTime": "22:15", "members": [] }
+  "카룻": [
+    {
+      "title": "카룻 1팀",
+      "date": "3/8(금)",
+      "startTime": "21:45",
+      "members": [
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        }
+      ]
+    },
+    {
+      "title": "카룻 2팀",
+      "date": "3/9(토)",
+      "startTime": "22:00",
+      "members": [
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        }
+      ]
+    },
+    {
+      "title": "카룻 3팀",
+      "date": "3/10(일)",
+      "startTime": "22:15",
+      "members": [
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        },
+        {
+          "nickname": ""
+        }
+      ]
+    }
   ]
 }

@@ -1,46 +1,239 @@
 import express from 'express';
-import fs from 'fs';
 import path from 'path';
-import readline from 'readline';
+import * as fs from 'fs';
+import * as cheerio from 'cheerio';
+import bodyParser from 'body-parser';
+import { addDays, getDate, getDay, getMonth, startOfWeek } from 'date-fns';
+
+import { getDateStr } from './utils';
+import { MAX_MEMBER_COUNT, MEMBER_LIST_FILE_NAME, TEMPLATE_FILE_NAME, DAYS_IN_WEEK } from './constants';
+
+import type { Request } from 'express';
+import type { MemberList, ContentInfo } from './types';
+
+type ContentsJoinReq = {
+  nickname: string;
+  content: string;
+  team: number;
+};
 
 const app = express();
 const port = 8000;
-const cwd = process.cwd();
 
-const gundanListPath = path.resolve(__dirname, './data/gundan.html');
-const charutListPath = path.resolve(__dirname, './data/list_charut.txt');
+app.use(bodyParser.json());
 
-app.get('/', (req, res) => {
-  res.send('Hello World!');
+const getDataFilePath = (fileName: string) => {
+  return path.resolve(__dirname, `./data/${fileName}`);
+};
+
+const getFixtureFilePath = (fileName: string) => {
+  return path.resolve(__dirname, `./fixture/${fileName}`);
+};
+
+const refineListHtml = ($: cheerio.CheerioAPI, content: string) => {
+  return $(`.${content}`)
+    .clone()
+    .html()
+    ?.replace(/<div>/g, '')
+    .replace(/<div id=".*">/g, '')
+    .replace(/<\/div>/g, '')
+    .trim();
+};
+
+// 컨텐츠 명단 조회
+app.get('/contents/member', (req: Request<{ content: string }>, res) => {
+  const { content } = req.query;
+
+  if (typeof content === 'string') {
+    const htmlStr = fs.readFileSync(getDataFilePath(MEMBER_LIST_FILE_NAME[content]), 'utf-8');
+    const $ = cheerio.load(htmlStr, null, false);
+    const listHtml = refineListHtml($, content);
+
+    res.send(listHtml);
+  } else {
+    res.status(400).send('error');
+  }
 });
 
-app.get('/gundan', (req, res) => {
-  const list = fs.readFileSync(gundanListPath, 'utf-8');
+// 컨텐츠 명단 초기화
+app.post('/contents/member/init', (req: Request<{ content: string }>, res) => {
+  const { content } = req.body;
+  const jsonStr = fs.readFileSync(getFixtureFilePath('template_list.json'), 'utf-8');
+  const jsonObj = JSON.parse(jsonStr);
+  const contentList: ContentInfo[] = jsonObj[content];
 
-  res.send(list);
+  // 존재하는 보스인지 확인
+  if (!contentList) {
+    return res.send(`${content}은/는 없습니다만!`);
+  }
+
+  const templateHtmlStr = fs.readFileSync(getFixtureFilePath(TEMPLATE_FILE_NAME[content]), 'utf-8');
+  const $ = cheerio.load(templateHtmlStr, null, false);
+
+  const today = new Date();
+  const closestSat = addDays(startOfWeek(today), 5);
+  let dateStr = getDateStr(today);
+
+  const newContentList = contentList.map((info, i) => {
+    const team = i + 1;
+    const targetId = `#${content}-${team}-time`;
+    let contentTimeStr = `${content} ${team}팀 명단 ${dateStr} [${info.startTime}]`;
+
+    if (content === '카룻') {
+      const date = addDays(closestSat, i);
+      const dayStr = DAYS_IN_WEEK[getDay(date)];
+      dateStr = getDateStr(date);
+      contentTimeStr = `${content} ${dayStr}요일팀 명단 ${dateStr}[${info.startTime}] `;
+    }
+
+    $(targetId).empty().append(contentTimeStr);
+
+    return { ...info, date: dateStr };
+  });
+
+  const newJson = { ...jsonObj, [content]: newContentList };
+  const listHtml = refineListHtml($, content);
+
+  fs.writeFileSync(getDataFilePath('list.json'), JSON.stringify(newJson, null, 2));
+  fs.writeFileSync(getDataFilePath(MEMBER_LIST_FILE_NAME[content]), $.html());
+
+  res.send(listHtml);
 });
 
-app.post('/gundan', (req, res) => {
+// 컨텐츠 가입
+app.post('/contents/member/join', (req: Request<ContentsJoinReq>, res) => {
+  const { nickname, content, team } = req.body;
+  const index = team - 1;
+  const fileName = MEMBER_LIST_FILE_NAME[content];
+
+  const jsonStr = fs.readFileSync(getDataFilePath('list.json'), 'utf-8');
+  const jsonObj = JSON.parse(jsonStr);
+  const contentList = jsonObj[content];
+
+  // 존재하는 보스인지 확인
+  if (!contentList) {
+    return res.send(`${content}은/는 없습니다만!`);
+  }
+
+  // 존재하는 팀인지 확인
+  if (!contentList[index]) {
+    return res.send(`${content} ${team}팀은 없습니다만!`);
+  }
+
+  const memberList: MemberList = contentList[index].members;
+  // 꽉 찼는지 확인
+  const isMax = memberList.filter(({ nickname }) => nickname).length === MAX_MEMBER_COUNT;
+  if (isMax) {
+    return res.send(`${content} ${team}팀 꽉 참!`);
+  }
+
+  // 중복 확인
+  const duplicated = memberList.find((member) => member.nickname === nickname);
+  if (duplicated) {
+    return res.send(`${nickname}은/는 이미 있음!`);
+  }
+
+  let no = 1;
+  const newList = contentList.map((info: ContentInfo, i: number) => {
+    if (i === team - 1) {
+      const firstEmptyIdx = info.members.findIndex(({ nickname }) => !nickname);
+      const newMembers = info.members.map((member, i) => (i === firstEmptyIdx ? { ...member, nickname } : member));
+      no = firstEmptyIdx + 1;
+
+      return { ...info, members: newMembers };
+    }
+
+    return info;
+  });
+
+  const newJson = { ...jsonObj, [content]: newList };
+  const htmlStr = fs.readFileSync(getDataFilePath(fileName), 'utf-8');
+  const $ = cheerio.load(htmlStr, null, false);
+  const targetId = `#${content}-${team}-${no}`;
+
+  $(targetId).append(` ${nickname}`);
+
+  const listHtml = refineListHtml($, content);
+
+  fs.writeFileSync(getDataFilePath('list.json'), JSON.stringify(newJson, null, 2));
+  fs.writeFileSync(getDataFilePath(fileName), $.html());
+
+  res.send(listHtml);
+});
+
+// TODO: 컨텐츠 명단 수정
+app.post('/contents/member/edit', (req, res) => {
   res.send('get gundan');
 });
 
-app.delete('/gundan', (req, res) => {
-  res.send('get gundan');
+// 컨텐츠 시간 및 날짜 수정
+app.post(
+  '/contents/member/edit',
+  (req: Request<{ content: string; team: number; key: string; value: string }>, res) => {
+    const { content, team, key, value } = req.body;
+    if (key === '시간') {
+    } else if (!isNaN(Number(key))) {
+    }
+
+    res.send('get gundan');
+  }
+);
+
+// 컨텐츠 명단 삭제
+app.post('/contents/member/delete', (req: Request<{ content: string; team: number; no: number }>, res) => {
+  const { content, team, no } = req.body;
+  const index = team - 1;
+
+  const jsonStr = fs.readFileSync(getDataFilePath('list.json'), 'utf-8');
+  const jsonObj = JSON.parse(jsonStr);
+  const contentList = jsonObj[content];
+  const fileName = MEMBER_LIST_FILE_NAME[content];
+
+  // 존재하는 보스인지 확인
+  if (!contentList) {
+    return res.send(`${content}은/는 없습니다만!`);
+  }
+
+  // 존재하는 팀인지 확인
+  if (!contentList[index]) {
+    return res.send(`${content} ${team}팀은 없습니다만!`);
+  }
+
+  let nickname = '';
+  const newList = contentList.map((info: ContentInfo, i: number) => {
+    if (i === team - 1) {
+      const newMembers = info.members.map((member, j) => {
+        if (j === no - 1) {
+          nickname = member.nickname;
+
+          return { ...member, nickname: '' };
+        }
+        return member;
+      });
+
+      return { ...info, members: newMembers };
+    }
+
+    return info;
+  });
+
+  const newJson = { ...jsonObj, [content]: newList };
+  const htmlStr = fs.readFileSync(getDataFilePath(fileName), 'utf-8');
+  const $ = cheerio.load(htmlStr, null, false);
+  const targetId = `#${content}-${team}-${no}`;
+  const newText = $(targetId).text().replace(` ${nickname}`, '');
+
+  $(targetId).empty().append(newText);
+
+  const listHtml = refineListHtml($, content);
+
+  fs.writeFileSync(getDataFilePath('list.json'), JSON.stringify(newJson, null, 2));
+  fs.writeFileSync(getDataFilePath(fileName), $.html());
+
+  res.send(listHtml);
 });
 
-app.get('/charut', (req, res) => {
-  const list = fs.readFileSync(charutListPath, 'utf-8');
-
-  res.send(list);
-});
-
-app.post('/charut', (req, res) => {
-  res.send('get gundan');
-});
-
-app.delete('/charut', (req, res) => {
-  res.send('get gundan');
-});
+// 명단 초기화
 
 app.listen(port, () => {
   console.log(`seed-bot listening on port ${port}`);
