@@ -252,8 +252,8 @@ app.post('/contents/edit', (req: Request<{ content: string; team: number; key: s
 });
 
 // 컨텐츠 명단 삭제
-app.post('/contents/member/delete', (req: Request<{ content: string; team: number; no: number }>, res) => {
-  const { content, team, no } = req.body;
+app.post('/contents/member/delete', (req: Request<{ content: string; team: number; nicknameOrNo: string }>, res) => {
+  const { content, team, nicknameOrNo } = req.body;
   const index = team - 1;
 
   const jsonStr = fs.readFileSync(getDataFilePath('list.json'), 'utf-8');
@@ -271,11 +271,13 @@ app.post('/contents/member/delete', (req: Request<{ content: string; team: numbe
     return res.send(`${content} ${team}팀은 없습니다만!`);
   }
 
+  let no = 0;
   let nickname = '';
   const newList = contentList.map((info: ContentInfo, i: number) => {
-    if (i === team - 1) {
+    if (i === index) {
       const newMembers = info.members.map((member, j) => {
-        if (j === no - 1) {
+        if (j === Number(nicknameOrNo) - 1 || member.nickname === nicknameOrNo) {
+          no = j + 1;
           nickname = member.nickname;
 
           return { ...member, nickname: '' };

@@ -178,7 +178,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
     const deleteData = {
       content: content,
       team: Number(team),
-      no: Number(key),
+      nicknameOrNo: key,
     };
     const filteredMemberList = deleteMember(deleteData);
 
