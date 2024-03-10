@@ -1,4 +1,14 @@
-const BASE_URL = 'https://seed-bot-zubetcha.koyeb.app';
+const BASE_URL = 'SERVEL_URL';
+
+const getContentStr = (response) => {
+  const content = org.jsoup.Jsoup.parse(response.html())
+    .body()
+    .html()
+    .replace(/<br\s*\/?>/gi, '')
+    .trim();
+
+  return content;
+};
 
 const getContentsMemberList = (content) => {
   let json;
@@ -11,11 +21,7 @@ const getContentsMemberList = (content) => {
       .ignoreHttpErrors(true)
       .get();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -35,11 +41,7 @@ const initContent = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -60,11 +62,7 @@ const joinContent = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -85,11 +83,7 @@ const editContentInfo = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -110,11 +104,7 @@ const deleteMember = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
