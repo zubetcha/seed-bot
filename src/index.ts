@@ -3,7 +3,9 @@ import path from 'path';
 import * as fs from 'fs';
 import * as cheerio from 'cheerio';
 import bodyParser from 'body-parser';
-import { addDays, getDate, getDay, getMonth, startOfWeek } from 'date-fns';
+import { configDotenv } from 'dotenv';
+import { createClient } from '@supabase/supabase-js';
+import { addDays, format, getDate, getDay, getMonth, startOfWeek } from 'date-fns';
 
 import { getDateStr } from './utils';
 import { MAX_MEMBER_COUNT, MEMBER_LIST_FILE_NAME, TEMPLATE_FILE_NAME, DAYS_IN_WEEK } from './constants';
@@ -18,8 +20,22 @@ type ContentsJoinReq = {
   no?: number;
 };
 
+type Content = {
+  name: string;
+  title: string;
+  date: string;
+  start_time: string;
+  members: MemberList;
+};
+
+configDotenv();
 const app = express();
-const port = 8000;
+const port = process.env.PORT;
+
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_KEY = process.env.SUPABASE_KEY || '';
+
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 app.use(bodyParser.json());
 
@@ -41,8 +57,35 @@ const refineListHtml = ($: cheerio.CheerioAPI, content: string) => {
     .trim();
 };
 
+const refineResContent = (content: string, contentList: Content[]) => {
+  let con = '';
+  console.log(JSON.stringify(contentList));
+
+  if (content === '군단') {
+    con = '‼시간 엄수 늦으면 버립니다‼\n';
+
+    contentList?.forEach(({ name, title, date, start_time, members }) => {
+      const sortedMembers = members.sort((a, b) => a.no - b.no);
+      const currDate = new Date(date).toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
+      const dateStr = getDateStr(new Date(currDate));
+      const startTime = start_time.slice(0, 5);
+
+      con += `🌱 ${title} ${dateStr} [${startTime}]`;
+      con += '\n';
+      new Array(10).fill(1).forEach((num, i) => {
+        con += `${num + i}. ${members[i].nickname ? members[i].nickname : ''}`;
+        con += '\n';
+      });
+    });
+
+    con += 'https://discord.com/invite/8vGTYwgQ';
+  }
+
+  return con;
+};
+
 // 컨텐츠 명단 조회
-app.get('/contents/member', (req: Request<{ content: string }>, res) => {
+app.get('/contents/member', async (req: Request<{ content: string }>, res) => {
   const { content } = req.query;
 
   if (typeof content === 'string') {
@@ -50,14 +93,18 @@ app.get('/contents/member', (req: Request<{ content: string }>, res) => {
     const $ = cheerio.load(htmlStr, null, false);
     const listHtml = refineListHtml($, content);
 
-    res.send(listHtml);
+    // REVIEW: sb 리팩토링
+    const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
+    const contentList = refineResContent(content, data as Content[]);
+
+    res.send(contentList);
   } else {
     res.status(400).send('error');
   }
 });
 
 // 컨텐츠 명단 초기화
-app.post('/contents/member/init', (req: Request<{ content: string }>, res) => {
+app.post('/contents/member/init', async (req: Request<{ content: string }>, res) => {
   const { content } = req.body;
   const jsonStr = fs.readFileSync(getFixtureFilePath('template_list.json'), 'utf-8');
   const jsonObj = JSON.parse(jsonStr);
@@ -106,11 +153,23 @@ app.post('/contents/member/init', (req: Request<{ content: string }>, res) => {
   fs.writeFileSync(getDataFilePath('list.json'), JSON.stringify(newJson, null, 2));
   fs.writeFileSync(getDataFilePath(MEMBER_LIST_FILE_NAME[content]), $.html());
 
-  res.send(listHtml);
+  // REVIEW: sb 리팩토링
+  // contents 날짜, 시간 초기화
+  if (content === '군단') {
+    await sb.from('contents').update({}).eq('name', content);
+  } else if (content === '카룻') {
+  }
+
+  await sb.from('members').update({ nickname: null }).eq('content_name', content);
+
+  const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
+  const contents = refineResContent(content, data as Content[]);
+
+  res.send(contents);
 });
 
 // 컨텐츠 가입
-app.post('/contents/member/join', (req: Request<ContentsJoinReq>, res) => {
+app.post('/contents/member/join', async (req: Request<ContentsJoinReq>, res) => {
   const { nickname, content, team, no } = req.body;
   const index = team - 1;
   const fileName = MEMBER_LIST_FILE_NAME[content];
@@ -119,17 +178,22 @@ app.post('/contents/member/join', (req: Request<ContentsJoinReq>, res) => {
   const jsonObj = JSON.parse(jsonStr);
   const contentList: ContentInfo[] = jsonObj[content];
 
+  // REVIEW: sb 리팩토링
+  const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
+  const targetTeam = data?.find((contentInfo) => contentInfo.team === team);
+  const contents = refineResContent(content, data as Content[]);
+
   // 존재하는 보스인지 확인
-  if (!contentList) {
+  if (!contents?.length) {
     return res.send(`${content}은/는 없습니다만.`);
   }
 
   // 존재하는 팀인지 확인
-  if (!contentList[index]) {
+  if (!targetTeam) {
     return res.send(`${content} ${team}팀은 없습니다만.`);
   }
 
-  const memberList: MemberList = contentList[index].members;
+  const memberList: MemberList = targetTeam.members;
   // 꽉 찼는지 확인
   const isMax = memberList.filter(({ nickname }) => nickname).length === MAX_MEMBER_COUNT;
   if (isMax) {
@@ -148,7 +212,8 @@ app.post('/contents/member/join', (req: Request<ContentsJoinReq>, res) => {
   }
 
   // no 자리 비어 있는지 확인
-  if (no && contentList[index].members[no - 1].nickname) {
+  const hasMember = !!memberList.find((member) => member.no == no)?.nickname;
+  if (no && hasMember) {
     return res.send(`${no}번 자리는 이미 있습니다만.`);
   }
 
@@ -177,7 +242,9 @@ app.post('/contents/member/join', (req: Request<ContentsJoinReq>, res) => {
   fs.writeFileSync(getDataFilePath('list.json'), JSON.stringify(newJson, null, 2));
   fs.writeFileSync(getDataFilePath(fileName), $.html());
 
-  res.send(listHtml);
+  await sb.from('members').update;
+
+  res.send(data);
 });
 
 // 컨텐츠 시간 및 날짜 수정
@@ -225,16 +292,16 @@ app.post('/contents/edit', (req: Request<{ content: string; team: number; key: s
     const no = Number(key);
     const targetId = `#${content}-${team}-${no}`;
 
-    newContentList = contentList.map((info, i) => {
-      const index = Number(key) - 1;
-      const newMemberList = info.members.map((member, j) => (j === no - 1 ? { nickname: value } : member));
+    // newContentList = contentList.map((info, i) => {
+    //   const index = Number(key) - 1;
+    //   const newMemberList = info.members.map((member, j) => (j === no - 1 ? { nickname: value } : member));
 
-      if (i === index) {
-        return { ...info, members: newMemberList };
-      }
+    //   if (i === index) {
+    //     return { ...info, members: newMemberList };
+    //   }
 
-      return info;
-    });
+    //   return info;
+    // });
 
     const newText = $(targetId)
       .text()

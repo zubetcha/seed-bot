@@ -1,3 +1,4 @@
+export const DATE_FORMAT = 'YYYY-MM-DD';
 export const MAX_MEMBER_COUNT = 10;
 export const DAYS_IN_WEEK = ['일', '월', '화', '수', '목', '금', '토'];
 
