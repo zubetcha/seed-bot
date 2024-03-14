@@ -1,9 +1,9 @@
-const BASE_URL = 'SERVEL_URL';
+const BASE_URL = 'SERVER';
 
 const getContentStr = (response) => {
   const content = org.jsoup.Jsoup.parse(response.html())
     .body()
-    .html()
+    .text()
     .replace(/<br\s*\/?>/gi, '')
     .trim();
 
@@ -207,9 +207,9 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
       newNo: sixth ? Number(sixth) : 0,
     };
 
-    const filteredMemberList = shiftMember(shiftData);
+    const shiftedMemberList = shiftMember(shiftData);
 
-    Log.i(filteredMemberList);
-    replier.reply(room, filteredMemberList);
+    Log.i(shiftedMemberList);
+    replier.reply(room, shiftedMemberList);
   }
 }
