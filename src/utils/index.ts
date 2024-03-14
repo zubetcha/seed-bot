@@ -55,11 +55,9 @@ export const refineContentListRes = (content: string, contentList: Content[]) =>
       const dateStr = getDateStr(new Date(currDate));
       const startTime = start_time.slice(0, 5);
 
-      con += `🌱 ${title} ${dateStr} [${startTime}]`;
-      con += '\n';
+      con += `🌱 ${title} ${dateStr} [${startTime}]<br/>`;
       members.forEach(({ nickname, no }, i) => {
-        con += `${NO_MARK[String(no)]} ${NO_POSITION[String(no)] || ''}${nickname ?? ''}`;
-        con += '\n';
+        con += `${NO_MARK[String(no)]} ${NO_POSITION[String(no)] || ''}${nickname ?? ''}<br/>`;
       });
     });
 
@@ -70,12 +68,10 @@ export const refineContentListRes = (content: string, contentList: Content[]) =>
       const dateStr = getDateStr(new Date(currDate));
       const startTime = start_time.slice(0, 5);
 
-      con += `🌷 ${title}팀 ${dateStr} [${startTime}]`;
-      con += '\n';
+      con += `🌷 ${title}팀 ${dateStr} [${startTime}]<br/>`;
       members.forEach(({ nickname, no }, i) => {
         console.log(nickname);
-        con += `${NO_MARK[String(no)]} ${NO_POSITION[String(no)] || ''}${nickname ?? ''}`;
-        con += '\n';
+        con += `${NO_MARK[String(no)]} ${NO_POSITION[String(no)] || ''}${nickname ?? ''}<br/>`;
       });
     });
   }
