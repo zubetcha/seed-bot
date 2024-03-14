@@ -59,7 +59,7 @@ app.post('/contents/member/init', async (req: Request<{}, {}, { content: string 
   const { content } = req.body;
 
   if (!content) {
-    return res.send(`${content}은/는 없어.`);
+    return res.send(`${content}은/는 없어요.`);
   }
 
   const currentDate = new Date();
@@ -92,7 +92,12 @@ app.post('/contents/member/init', async (req: Request<{}, {}, { content: string 
 app.post('/contents/member/join', async (req: Request<ContentsJoinReq>, res) => {
   const { nickname, content, team, no } = req.body;
 
-  const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
+  const { data } = await sb
+    .from('contents')
+    .select('*, members(nickname, no)')
+    .eq('name', content)
+    .order('id')
+    .order('no', { referencedTable: 'members' });
   const targetTeam = data?.find((contentInfo) => contentInfo.team === team);
 
   // 존재하는 보스인지 확인
@@ -147,7 +152,12 @@ app.post('/contents/member/join', async (req: Request<ContentsJoinReq>, res) => 
 app.post('/contents/edit', async (req: Request<{ content: string; team: number; key: string; value: string }>, res) => {
   const { content, team, key, value } = req.body;
 
-  const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
+  const { data } = await sb
+    .from('contents')
+    .select('*, members(nickname, no)')
+    .eq('name', content)
+    .order('id')
+    .order('no', { referencedTable: 'members' });
   const targetTeam = data?.find((contentInfo) => contentInfo.team === team);
 
   if (!value) {
