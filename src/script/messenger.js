@@ -1,4 +1,4 @@
-const BASE_URL = 'https://seed-bot-zubetcha.koyeb.app';
+const BASE_URL = 'SERVEL';
 
 const getContentStr = (response) => {
   const content = org.jsoup.Jsoup.parse(response.html())
