@@ -197,8 +197,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
     replier.reply(room, filteredMemberList);
   }
 
-  // !이동 군단 1 3 2 3?
-  if (cmd === '이동') {
+  if (cmd === '!이동') {
     const shiftData = {
       content: content,
       team: Number(team),
