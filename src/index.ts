@@ -129,13 +129,13 @@ app.post('/contents/member/join', async (req: Request<ContentsJoinReq>, res) => 
   }
 
   // no 자리 비어 있는지 확인
-  const hasMember = !!memberList.find((member) => member.no == no)?.nickname;
+  const hasMember = !!memberList.find((member) => member.no === no)?.nickname;
   if (no && hasMember) {
     return res.send(`${no}번 자리는 이미 있습니다만.`);
   }
 
   const refinedNo = no || memberList.find(({ nickname }) => !nickname)?.no;
-  await sb.from('members').update({ nickname }).eq('content_id', targetTeam.id).eq('no', refinedNo);
+  await sb.from('members').update({ nickname }).eq('content_id', 5).eq('no', 2);
 
   const { data: updatedData } = await sb
     .from('contents')
