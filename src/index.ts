@@ -3,11 +3,11 @@ import bodyParser from 'body-parser';
 import { configDotenv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 
-import { getDateStr, getInitDateTime, refineContentListRes } from './utils';
+import { getInitDateTime, refineContentListRes } from './utils';
 import { MAX_MEMBER_COUNT } from './constants';
 
 import type { Request } from 'express';
-import type { MemberList, ContentInfo } from './types';
+import type { MemberList } from './types';
 
 type ContentsJoinReq = {
   nickname: string;
