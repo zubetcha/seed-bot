@@ -168,11 +168,15 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
     const deleteData = {
       content: content,
       team: Number(team),
-      nicknameOrNo: key,
+      value: key,
     };
     const filteredMemberList = deleteMember(deleteData);
 
     Log.i(filteredMemberList);
     replier.reply(room, filteredMemberList);
+  }
+
+  // !이동 군단 1 3
+  if (cmd === '이동') {
   }
 }
