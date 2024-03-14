@@ -1,4 +1,4 @@
-export type MemberList = { nickname: string }[];
+export type MemberList = { nickname: string; no: number }[];
 export type ContentInfo = {
   title: string;
   startTime: string;

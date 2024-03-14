@@ -2,13 +2,10 @@
   "군단": [
     {
       "title": "군단 1팀",
-      "date": "",
-      "startTime": "21:30",
+      "date": "3/13(수)",
+      "startTime": "21:45",
       "members": [
         {
-          "nickname": "공차"
-        },
-        {
           "nickname": ""
         },
         {
@@ -33,13 +30,16 @@
           "nickname": ""
         },
         {
-          "nickname": "홍차"
+          "nickname": ""
+        },
+        {
+          "nickname": ""
         }
       ]
     },
     {
       "title": "군단 2팀",
-      "date": "",
+      "date": "3/13(수)",
       "startTime": "22:00",
       "members": [
         {
@@ -76,7 +76,7 @@
     },
     {
       "title": "군단 3팀",
-      "date": "",
+      "date": "3/13(수)",
       "startTime": "22:15",
       "members": [
         {
@@ -113,7 +113,7 @@
     },
     {
       "title": "군단 4팀",
-      "date": "",
+      "date": "3/13(수)",
       "startTime": "22:30",
       "members": [
         {
@@ -152,7 +152,7 @@
   "카룻": [
     {
       "title": "카룻 1팀",
-      "date": "3/8(금)",
+      "date": "",
       "startTime": "21:45",
       "members": [
         {
@@ -189,7 +189,7 @@
     },
     {
       "title": "카룻 2팀",
-      "date": "3/9(토)",
+      "date": "",
       "startTime": "22:00",
       "members": [
         {
@@ -226,7 +226,7 @@
     },
     {
       "title": "카룻 3팀",
-      "date": "3/10(일)",
+      "date": "",
       "startTime": "22:15",
       "members": [
         {

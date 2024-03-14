@@ -1,4 +1,14 @@
-const BASE_URL = 'https://seed-bot-zubetcha.koyeb.app';
+const BASE_URL = 'SERVEL_URL';
+
+const getContentStr = (response) => {
+  const content = org.jsoup.Jsoup.parse(response.html())
+    .body()
+    .html()
+    .replace(/<br\s*\/?>/gi, '')
+    .trim();
+
+  return content;
+};
 
 const getContentsMemberList = (content) => {
   let json;
@@ -11,11 +21,7 @@ const getContentsMemberList = (content) => {
       .ignoreHttpErrors(true)
       .get();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -35,11 +41,7 @@ const initContent = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -60,11 +62,7 @@ const joinContent = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -85,11 +83,7 @@ const editContentInfo = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -110,11 +104,28 @@ const deleteMember = (data) => {
       .ignoreHttpErrors(true)
       .post();
 
-    result = org.jsoup.Jsoup.parse(response.html())
-      .body()
-      .html()
-      .replace(/<br\s*\/?>/gi, '')
-      .trim();
+    result = getContentStr(response);
+  } catch (e) {
+    result = e;
+    Log.e(e);
+  }
+
+  return result;
+};
+
+const shiftMember = (data) => {
+  let json;
+  let result;
+
+  try {
+    let response = org.jsoup.Jsoup.connect(BASE_URL + '/contents/member/shift')
+      .header('Content-Type', 'application/json')
+      .requestBody(JSON.stringify(data))
+      .ignoreContentType(true)
+      .ignoreHttpErrors(true)
+      .post();
+
+    result = getContentStr(response);
   } catch (e) {
     result = e;
     Log.e(e);
@@ -128,7 +139,7 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
     return;
   }
 
-  const [cmd, content, team, key, value] = msg.trim().split(' ');
+  const [cmd, content, team, key, value, sixth] = msg.trim().split(' ');
 
   if (cmd === '!명단') {
     const memberList = getContentsMemberList(content);
@@ -178,9 +189,25 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
     const deleteData = {
       content: content,
       team: Number(team),
-      nicknameOrNo: key,
+      value: key,
     };
     const filteredMemberList = deleteMember(deleteData);
+
+    Log.i(filteredMemberList);
+    replier.reply(room, filteredMemberList);
+  }
+
+  // !이동 군단 1 3 2 3?
+  if (cmd === '이동') {
+    const shiftData = {
+      content: content,
+      team: Number(team),
+      value: key,
+      newTeam: Number(value),
+      newNo: sixth ? Number(sixth) : 0,
+    };
+
+    const filteredMemberList = shiftMember(shiftData);
 
     Log.i(filteredMemberList);
     replier.reply(room, filteredMemberList);
