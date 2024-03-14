@@ -48,7 +48,7 @@ export const refineContentListRes = (content: string, contentList: Content[]) =>
   let con = '';
 
   if (content === '군단') {
-    con = '‼시간 엄수 늦으면 버립니다‼\n';
+    con = '‼시간 엄수 늦으면 버립니다‼<br/>';
 
     contentList?.forEach(({ name, title, date, start_time, members }) => {
       const currDate = new Date(date).toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
