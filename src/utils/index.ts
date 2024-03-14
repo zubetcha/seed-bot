@@ -58,7 +58,7 @@ export const refineContentListRes = (content: string, contentList: Content[]) =>
       con += `🌱 ${title} ${dateStr} [${startTime}]`;
       con += '\n';
       members.forEach(({ nickname, no }, i) => {
-        con += `${NO_MARK[String(no)]}. ${NO_POSITION[String(no) || '']}${nickname ?? ''}`;
+        con += `${NO_MARK[String(no)]} ${NO_POSITION[String(no)] || ''}${nickname ?? ''}`;
         con += '\n';
       });
     });
@@ -74,7 +74,7 @@ export const refineContentListRes = (content: string, contentList: Content[]) =>
       con += '\n';
       members.forEach(({ nickname, no }, i) => {
         console.log(nickname);
-        con += `${NO_MARK[String(no)]}. ${NO_POSITION[String(no) || '']}${nickname ?? ''}`;
+        con += `${NO_MARK[String(no)]} ${NO_POSITION[String(no)] || ''}${nickname ?? ''}`;
         con += '\n';
       });
     });

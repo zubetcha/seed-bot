@@ -40,11 +40,11 @@ app.get('/contents/member', async (req: Request<{ content: string }>, res) => {
   const { content } = req.query;
 
   if (typeof content === 'string') {
-    // REVIEW: sb 리팩토링
     const { data } = await sb
       .from('contents')
       .select('*, members(nickname, no)')
       .eq('name', content)
+      .order('id')
       .order('no', { referencedTable: 'members' });
     const contentList = refineContentListRes(content, data as Content[]);
 
@@ -66,9 +66,6 @@ app.post('/contents/member/init', async (req: Request<{}, {}, { content: string 
   const formattedDate = currentDate.toLocaleString('en-US', { timeZone: 'Asia/Seoul' });
   const today = new Date(formattedDate);
 
-  // REVIEW: sb 리팩토링
-  // contents 날짜, 시간 초기화
-
   const { data } = await sb.from('contents').select('team').eq('name', content).order('team');
 
   data &&
@@ -84,6 +81,7 @@ app.post('/contents/member/init', async (req: Request<{}, {}, { content: string 
     .from('contents')
     .select('*, members(nickname, no)')
     .eq('name', content)
+    .order('id')
     .order('no', { referencedTable: 'members' });
   const contents = refineContentListRes(content, updatedData as Content[]);
 
@@ -94,7 +92,6 @@ app.post('/contents/member/init', async (req: Request<{}, {}, { content: string 
 app.post('/contents/member/join', async (req: Request<ContentsJoinReq>, res) => {
   const { nickname, content, team, no } = req.body;
 
-  // REVIEW: sb 리팩토링
   const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
   const targetTeam = data?.find((contentInfo) => contentInfo.team === team);
 
@@ -133,17 +130,13 @@ app.post('/contents/member/join', async (req: Request<ContentsJoinReq>, res) => 
   }
 
   const refinedNo = no || memberList.find(({ nickname }) => !nickname)?.no;
-  await sb
-    .from('members')
-    .update({ nickname })
-    .eq('content_name', content)
-    .eq('content_id', targetTeam.id)
-    .eq('no', refinedNo);
+  await sb.from('members').update({ nickname }).eq('content_id', targetTeam.id).eq('no', refinedNo);
 
   const { data: updatedData } = await sb
     .from('contents')
     .select('*, members(nickname, no)')
     .eq('name', content)
+    .order('id')
     .order('no', { referencedTable: 'members' });
   const contents = refineContentListRes(content, updatedData as Content[]);
 
@@ -154,7 +147,6 @@ app.post('/contents/member/join', async (req: Request<ContentsJoinReq>, res) => 
 app.post('/contents/edit', async (req: Request<{ content: string; team: number; key: string; value: string }>, res) => {
   const { content, team, key, value } = req.body;
 
-  // REVIEW: sb 리팩토링
   const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
   const targetTeam = data?.find((contentInfo) => contentInfo.team === team);
 
@@ -183,8 +175,7 @@ app.post('/contents/edit', async (req: Request<{ content: string; team: number; 
     await sb
       .from('members')
       .update({ nickname: value || '' })
-      .eq('content_name', content)
-      .eq('team', team)
+      .eq('content_id', targetTeam.id)
       .eq('no', no);
   }
 
@@ -192,6 +183,7 @@ app.post('/contents/edit', async (req: Request<{ content: string; team: number; 
     .from('contents')
     .select('*, members(nickname, no)')
     .eq('name', content)
+    .order('id')
     .order('no', { referencedTable: 'members' });
   const contents = refineContentListRes(content, updatedData as Content[]);
 
@@ -204,9 +196,6 @@ app.post(
   async (req: Request<any, any, { content: string; team: number; value: string }>, res) => {
     const { content, team, value } = req.body;
 
-    console.log(value);
-
-    // REVIEW: sb 리팩토링
     const { data } = await sb.from('contents').select('*, members(nickname, no)').eq('name', content);
     const targetTeam = data?.find((contentInfo) => contentInfo.team === team);
 
@@ -232,6 +221,91 @@ app.post(
       .from('contents')
       .select('*, members(nickname, no)')
       .eq('name', content)
+      .order('id')
+      .order('no', { referencedTable: 'members' });
+    const contents = refineContentListRes(content, updatedData as Content[]);
+
+    res.send(contents);
+  }
+);
+
+// 컨텐츠 명단 이동
+app.post(
+  '/contents/member/shift',
+  async (
+    req: Request<any, any, { content: string; team: number; value: string; newTeam: number; newNo?: number }>,
+    res
+  ) => {
+    const { content, team, value, newTeam, newNo } = req.body;
+
+    const { data: currentTeamInfo } = await sb
+      .from('contents')
+      .select('id')
+      .eq('name', content)
+      .eq('team', team)
+      .limit(1);
+    const { data: newTeamInfo } = await sb
+      .from('contents')
+      .select('id, members(nickname, no)')
+      .eq('name', content)
+      .eq('team', newTeam)
+      .order('no', { referencedTable: 'members' })
+      .limit(1);
+
+    if (!currentTeamInfo || !currentTeamInfo.length) {
+      return res.send(`${content} ${team}팀은 없는데요.`);
+    }
+
+    if (!newTeamInfo || !newTeamInfo.length) {
+      return res.send(`${content} ${newTeam}팀은 없는데요.`);
+    }
+
+    // 이동하려고 하는 팀의 명단이 모두 찬 경우
+    const isFull = newTeamInfo[0].members.every(({ nickname }) => nickname);
+
+    if (isFull) {
+      return res.send(`${content} ${newTeam}팀은 자리가 없답니다?`);
+    }
+
+    const contentId = currentTeamInfo[0].id;
+    const newContentId = newTeamInfo[0].id;
+
+    const isEmpty = newNo ? !newTeamInfo[0].members.find((member) => member.no === newNo)?.nickname : false;
+    const no = Number(value);
+    const emptyNo = newTeamInfo[0].members.find(({ nickname }) => !nickname)?.no || 0;
+    const targetNo = isEmpty ? newNo : emptyNo;
+    let nickname = '';
+
+    if (!isNaN(no)) {
+      const { data } = await sb.from('members').select('nickname').eq('content_id', contentId).eq('no', no).limit(1);
+
+      if (data && data.length) {
+        nickname = data[0].nickname;
+        await sb.from('members').update({ nickname: null }).eq('content_id', contentId).eq('no', no);
+      }
+    } else {
+      const { data } = await sb
+        .from('members')
+        .select('nickname')
+        .eq('content_id', contentId)
+        .eq('nickname', value)
+        .limit(1);
+
+      if (data && data.length) {
+        nickname = data[0].nickname;
+        await sb.from('members').update({ nickname: null }).eq('content_id', contentId).eq('nickname', value);
+      }
+    }
+
+    if (targetNo && nickname) {
+      await sb.from('members').update({ nickname }).eq('content_id', newContentId).eq('no', targetNo);
+    }
+
+    const { data: updatedData } = await sb
+      .from('contents')
+      .select('*, members(nickname, no)')
+      .eq('name', content)
+      .order('id')
       .order('no', { referencedTable: 'members' });
     const contents = refineContentListRes(content, updatedData as Content[]);
 

@@ -113,12 +113,33 @@ const deleteMember = (data) => {
   return result;
 };
 
+const shiftMember = (data) => {
+  let json;
+  let result;
+
+  try {
+    let response = org.jsoup.Jsoup.connect(BASE_URL + '/contents/member/shift')
+      .header('Content-Type', 'application/json')
+      .requestBody(JSON.stringify(data))
+      .ignoreContentType(true)
+      .ignoreHttpErrors(true)
+      .post();
+
+    result = getContentStr(response);
+  } catch (e) {
+    result = e;
+    Log.e(e);
+  }
+
+  return result;
+};
+
 function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName) {
   if (!msg.startsWith('!')) {
     return;
   }
 
-  const [cmd, content, team, key, value] = msg.trim().split(' ');
+  const [cmd, content, team, key, value, sixth] = msg.trim().split(' ');
 
   if (cmd === '!명단') {
     const memberList = getContentsMemberList(content);
@@ -176,7 +197,19 @@ function response(room, msg, sender, isGroupChat, replier, imageDB, packazgeName
     replier.reply(room, filteredMemberList);
   }
 
-  // !이동 군단 1 3
+  // !이동 군단 1 3 2 3?
   if (cmd === '이동') {
+    const shiftData = {
+      content: content,
+      team: Number(team),
+      value: key,
+      newTeam: Number(value),
+      newNo: sixth ? Number(sixth) : 0,
+    };
+
+    const filteredMemberList = shiftMember(shiftData);
+
+    Log.i(filteredMemberList);
+    replier.reply(room, filteredMemberList);
   }
 }
